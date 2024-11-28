@@ -2,3 +2,4 @@ replicate
 streamlit==1.37.0
 requests
 streamlit-image-select
+PyJWT
