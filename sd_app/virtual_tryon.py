@@ -13,7 +13,7 @@ import base64
 st.set_page_config(
     page_title="虚拟试穿", page_icon=":bridge_at_night:", layout="wide"
 )
-icon.show_icon(":bird:")
+icon.show_icon("🎩")
 st.markdown("# :rainbow[AI一键换装]")
 
 KELING_API_URL = "https://api.klingai.com"
@@ -46,6 +46,8 @@ def encode_jwt_token(ak, sk):
     token = jwt.encode(payload, sk, headers=headers)
     return token
 
+def on_click(url):
+    st.write(f"Selected image: {url}")
 
 def login_page():
     with st.form("login_form"):
@@ -132,6 +134,7 @@ def configure_sidebar() -> None:
         )
 
 
+
 def main_page(
     submitted: bool,
     checkPointId: str,
@@ -176,7 +179,7 @@ def main_page(
                     task_id = response.json().get("data").get("task_id")
                     st.session_state.task_id = task_id
                     st.write(f"当前正在试穿的任务id: {task_id}")
-                    # CjiIomdAMX8AAAAAARAC_g
+
                     # 轮询后端接口以获取生成的图片
                     all_images = []
                     while True:
@@ -201,39 +204,31 @@ def main_page(
                         st.session_state.generated_image = all_images
 
                         # Displaying the image
-                        for image in st.session_state.generated_image:
-                            with st.container():
-                                st.image(
-                                    image,
-                                    caption="Generated Image 🎈",
-                                    use_column_width=True,
-                                )
-                                response = requests.get(image)
-                                if response.status_code == 200:
-                                    image_data = response.content
-                                    result_images.append(image_data)
-                                else:
-                                    st.error(
-                                        f"Failed to fetch image from {image}. Error code: {response.status_code}",
-                                        icon="🚨",
+                        with st.expander("🎉 换装成功 🎉", expanded=True):
+                            for i, image in enumerate(st.session_state.generated_image):
+                                with st.container():
+                                    st.image(
+                                        image,
+                                        caption="🎈Generated Image 🎈",
+                                        # use_column_width=True,
+                                        width=300
                                     )
-
-                        # Create a BytesIO object
-                        zip_io = io.BytesIO()
-
-                        # Download option for each image
-                        with zipfile.ZipFile(zip_io, "w") as zipf:
-                            for i, image_data in enumerate(result_images):
-                                zipf.writestr(f"output_file_{i+1}.png", image_data)
-
-                        # Create a download button for the zip file
-                        st.download_button(
-                            ":red[**Download the Images**]",
-                            data=zip_io.getvalue(),
-                            file_name="output_files.zip",
-                            mime="application/zip",
-                            use_container_width=True,
-                        )
+                                    response = requests.get(image)
+                                    if response.status_code == 200:
+                                        image_data = response.content
+                                        result_images.append(image_data)
+                                        # Create a download button for each image
+                                        st.download_button(
+                                            f":red[**Download Image {i+1}**]",
+                                            data=image_data,
+                                            file_name=f"作品_{i+1}.png",
+                                            mime="image/png",
+                                        )
+                                    else:
+                                        st.error(
+                                            f"Failed to fetch image from {image}. Error code: {response.status_code}",
+                                            icon="🚨",
+                                        )
                     
                 status.update(
                     label="✅ Images generated!", state="complete", expanded=False
@@ -264,11 +259,26 @@ def main_page(
                 images.append(image.get("url"))
 
         images = images[:10]
-        image_select(
-            label="～ 😉",
-            images=images,
-            use_container_width=True,
-        )
+    
+        selected_image = image_select("请选择一张图片,下方预览下载～😉:", images)
+        
+        if selected_image:
+            with st.expander("Image Preview", expanded=True):
+                st.image(selected_image, width=300)
+                response = requests.get(selected_image)
+                if response.status_code == 200:
+                    image_data = response.content
+                    st.download_button(
+                        "Download Image",
+                        data=image_data,
+                        file_name="作品.png",
+                        mime="image/png",
+                    )
+                else:
+                    st.error(
+                        f"Failed to fetch image from {selected_image}. Error code: {response.status_code}",
+                        icon="🚨",
+                    )
 
 
 def main():
@@ -298,8 +308,8 @@ if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
 if __name__ == "__main__":
-    # main()
-    if st.session_state.logged_in:
-        main()
-    else:
-        login_page()
+    main()
+    # if st.session_state.logged_in:
+    #     main()
+    # else:
+    #     login_page()
