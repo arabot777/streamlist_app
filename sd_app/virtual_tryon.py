@@ -308,8 +308,8 @@ if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
 if __name__ == "__main__":
-    main()
-    # if st.session_state.logged_in:
-    #     main()
-    # else:
-    #     login_page()
+    # main()
+    if st.session_state.logged_in:
+        main()
+    else:
+        login_page()
