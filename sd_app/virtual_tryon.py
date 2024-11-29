@@ -111,8 +111,8 @@ def configure_sidebar() -> None:
     with st.sidebar:
         with st.form("my_form"):
             st.info("**虚拟试穿 ↓**", icon="👔")
-            checkpoint_name = st.selectbox("基础模型", checkpoints)
-            checkPointId = checkpoint_name
+            # checkpoint_name = st.selectbox("基础模型", checkpoints)
+            checkPointId = "kolors-virtual-try-on-v1"
             # Advanced Settings (for the curious minds!)
             image_human = st.file_uploader("上传人物图片")
             image_clothes = st.file_uploader("上传衣服图片")
